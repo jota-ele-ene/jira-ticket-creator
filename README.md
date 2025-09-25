@@ -1,129 +1,178 @@
 # JIRA Ticket Creator
 
-Formulario web para crear tickets en JIRA de manera fácil y rápida usando la REST API.
+🎫 **Aplicación web moderna para crear y gestionar tickets en JIRA** con actualizaciones en tiempo real.
 
-## Características
+## ✨ Características
 
-- ✅ Interfaz web moderna y responsive
-- ✅ Configuración de conexión a JIRA
-- ✅ Validación de campos en tiempo real
-- ✅ Soporte para diferentes tipos de issues
-- ✅ Manejo de errores completo
-- ✅ Backend seguro para evitar problemas de CORS
+- ✅ **Formulario intuitivo** para crear tickets en JIRA
+- ✅ **Bandeja de entrada** con filtros avanzados por labels, estado y prioridad
+- ✅ **Actualizaciones automáticas** cada 10 segundos sin recargar la página
+- ✅ **Interfaz responsive** que funciona en desktop y móvil
+- ✅ **Validación completa** de formularios y manejo de errores
+- ✅ **Conexión segura** a la API de JIRA Cloud
 
-## Requisitos
+## 🚀 Demo en Vivo
 
-- Node.js 14 o superior
-- Cuenta de JIRA Cloud
-- API Token de JIRA
+Una vez desplegado en Vercel:
+- **Formulario**: https://tu-proyecto.vercel.app/
+- **Bandeja**: https://tu-proyecto.vercel.app/inbox
 
-## Instalación
+## 🛠️ Tecnologías
 
-1. Clona o descarga este proyecto
-2. Instala las dependencias:
+- **Frontend**: HTML5, CSS3, JavaScript ES6+
+- **Backend**: Node.js, funciones serverless de Vercel
+- **API**: JIRA Cloud REST API v3
+- **Despliegue**: Vercel (gratuito)
+
+## 📋 Requisitos Previos
+
+1. **Cuenta de JIRA Cloud** (https://atlassian.com)
+2. **API Token de JIRA** ([generar aquí](https://id.atlassian.com/manage-profile/security/api-tokens))
+3. **Cuenta de GitHub** para versionado
+4. **Cuenta de Vercel** para despliegue gratuito
+
+## 🚀 Instalación y Despliegue
+
+### Opción 1: Despliegue directo en Vercel
+
+1. **Fork este repositorio** en tu cuenta de GitHub
+
+2. **Conecta con Vercel**:
+   - Ve a [vercel.com](https://vercel.com)
+   - Inicia sesión con GitHub
+   - Haz clic en "New Project" → "Import Git Repository"
+   - Selecciona tu fork del proyecto
+
+3. **Configura el proyecto**:
+   - Framework Preset: **Other**
+   - Root Directory: `/`
+   - Build Command: `echo "No build needed"`
+
+4. **¡Despliega!** - Vercel se encarga del resto
+
+### Opción 2: Desarrollo local
+
+1. **Clona el repositorio**:
+   ```bash
+   git clone https://github.com/tu-usuario/jira-ticket-creator.git
+   cd jira-ticket-creator
+   ```
+
+2. **Instala dependencias**:
    ```bash
    npm install
    ```
 
-3. Inicia el servidor:
+3. **Inicia el servidor de desarrollo**:
    ```bash
-   npm start
+   npm run dev
    ```
 
-4. Abre tu navegador en `http://localhost:3000`
+4. **Abre en el navegador**:
+   - Formulario: http://localhost:3000
+   - Bandeja: http://localhost:3000/inbox
 
-## Configuración
+## 🔧 Configuración
 
 ### 1. Generar API Token de JIRA
 
-1. Ve a [https://id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
-2. Haz clic en "Create API token"
-3. Dale un nombre descriptivo
-4. Copia el token generado
+1. Ve a [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
+2. Haz clic en **"Create API token"**
+3. Dale un nombre descriptivo (ej: "Ticket Creator")
+4. **Copia y guarda** el token (no podrás verlo después)
 
-### 2. Configurar el formulario
+### 2. Obtener información de JIRA
 
-1. **URL de JIRA**: Tu instancia de JIRA Cloud (ej: `https://tuempresa.atlassian.net`)
-2. **Email**: Tu email registrado en JIRA
-3. **API Token**: El token generado en el paso anterior
-4. **Clave del Proyecto**: La clave del proyecto donde crear tickets (ej: `TEST`, `PROJ`)
+- **URL**: Tu instancia de JIRA (ej: `https://tuempresa.atlassian.net`)
+- **Email**: Tu email de Atlassian
+- **Clave del Proyecto**: Ve a tu proyecto en JIRA y copia la clave (ej: `TEST`, `PROJ`)
 
-## Uso
+### 3. Usar la aplicación
 
-1. Completa la configuración de JIRA en el primer paso
-2. Haz clic en "Probar Conexión y Continuar"
-3. Rellena los campos del ticket:
-   - Tipo de Issue (requerido)
-   - Resumen (requerido)
-   - Descripción (opcional)
-   - Prioridad (opcional)
-   - Labels (opcional)
-4. Haz clic en "Crear Ticket"
+1. **Configurar conexión**:
+   - Introduce URL, email, token y proyecto
+   - Haz clic en "Probar Conexión y Continuar"
 
-## API Endpoints
+2. **Crear tickets**:
+   - Selecciona tipo de issue
+   - Rellena resumen y descripción
+   - Añade labels si quieres (separadas por comas)
+   - ¡Crear ticket!
 
-### POST /api/test-connection
-Prueba la conexión con JIRA y valida las credenciales.
+3. **Ver tickets**:
+   - Ve a `/inbox`
+   - Filtra por labels, estado o prioridad
+   - Se actualiza automáticamente cada 10 segundos
 
-### POST /api/create-ticket
-Crea un nuevo ticket en JIRA.
-
-### POST /api/issue-types
-Obtiene los tipos de issue disponibles para el proyecto.
-
-### POST /api/current-user
-Obtiene información del usuario actual.
-
-## Estructura del Proyecto
+## 🏗️ Estructura del Proyecto
 
 ```
-├── server.js              # Servidor backend Express
-├── jira-ticket-form.html  # Formulario web frontend
-├── package.json           # Dependencias del proyecto
-└── README.md             # Documentación
+jira-ticket-creator/
+├── 📁 api/                     # Funciones serverless
+│   ├── utils.js                # Helpers comunes
+│   ├── test-connection.js      # Probar conexión JIRA
+│   ├── get-tickets.js          # Obtener tickets con filtros
+│   ├── create-ticket.js        # Crear nuevo ticket
+│   ├── issue-types.js          # Tipos de issue disponibles
+│   └── current-user.js         # Info del usuario actual
+├── 📁 public/                  # Frontend estático
+│   ├── jira-ticket-form.html   # Formulario de creación
+│   └── jira-inbox.html         # Bandeja de entrada
+├── package.json                # Dependencias del proyecto
+├── vercel.json                 # Configuración de Vercel
+└── README.md                   # Este archivo
 ```
 
-## Seguridad
+## 🔗 Endpoints de la API
 
-- Las credenciales nunca se almacenan en el frontend
-- Todas las llamadas a JIRA se realizan desde el backend
-- Validación de datos tanto en frontend como backend
-- Manejo seguro de tokens de API
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/api/test-connection` | POST | Valida credenciales y proyecto |
+| `/api/get-tickets` | POST | Obtiene tickets con filtros |
+| `/api/create-ticket` | POST | Crea un nuevo ticket |
+| `/api/issue-types` | POST | Lista tipos de issue del proyecto |
+| `/api/current-user` | POST | Info del usuario autenticado |
 
-## Solución de Problemas
+## 🐛 Solución de Problemas
 
-### Error 401 - Unauthorized
-- Verifica que tu email sea correcto
-- Asegúrate de que el API token sea válido
-- Comprueba que tengas permisos en el proyecto
+### Error 401 - No autorizado
+- ✅ Verifica que el email sea correcto
+- ✅ Regenera el API token
+- ✅ Asegúrate de tener permisos en el proyecto
 
-### Error 404 - Not Found
-- Verifica que la URL de JIRA sea correcta
-- Comprueba que la clave del proyecto exista
-- Asegúrate de tener acceso al proyecto
+### Error 404 - Proyecto no encontrado
+- ✅ Verifica que la clave del proyecto sea correcta
+- ✅ Comprueba que tengas acceso al proyecto
 
-### Problemas de CORS
-- Este proyecto incluye un backend para evitar problemas de CORS
-- No intentes usar la API de JIRA directamente desde el navegador
+### No se crean tickets
+- ✅ Verifica que el tipo de issue existe en el proyecto
+- ✅ Revisa que el proyecto permita crear issues
 
-## Desarrollo
+### La bandeja no se actualiza
+- ✅ Comprueba la consola del navegador (F12)
+- ✅ Verifica que la conexión esté establecida
+- ✅ Los filtros pueden estar limitando los resultados
 
-Para desarrollo con recarga automática:
+## 🤝 Contribuciones
 
-```bash
-npm run dev
-```
-
-## Contribuciones
-
-Las contribuciones son bienvenidas. Por favor:
+Las contribuciones son bienvenidas:
 
 1. Fork el proyecto
-2. Crea una rama para tu feature
-3. Commit tus cambios
-4. Push a la rama
+2. Crea tu rama: `git checkout -b feature/nueva-funcionalidad`
+3. Commit tus cambios: `git commit -am 'Añadir nueva funcionalidad'`
+4. Push a la rama: `git push origin feature/nueva-funcionalidad`
 5. Abre un Pull Request
 
-## Licencia
+## 📄 Licencia
 
-MIT License
+Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
+
+## 🙏 Agradecimientos
+
+- [Atlassian JIRA](https://www.atlassian.com/software/jira) por su excelente API
+- [Vercel](https://vercel.com) por el hosting gratuito
+- [Axios](https://axios-http.com) por las peticiones HTTP
+
+---
+
+**⭐ ¡No olvides darle una estrella al proyecto si te ha sido útil!**

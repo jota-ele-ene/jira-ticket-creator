@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "public/**/*", "use": "@vercel/static" },
+    { "src": "api/**/*.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/", "dest": "/public/jira-ticket-form.html" },
+    { "src": "/inbox", "dest": "/public/jira-inbox.html" },
+    { "src": "/api/(.*)", "dest": "/api/$1.js" }
+  ]
+}
