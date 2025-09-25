@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bandeja de Entrada - Tickets JIRA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f5f6fa;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: #0052cc;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            background: #fff;
+            color: #0052cc;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .filter-group input, .filter-group select {
+            padding: 10px 14px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .filter-group input:focus, .filter-group select:focus {
+            outline: none;
+            border-color: #0052cc;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .tickets-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .tickets-header {
+            background: #f8f9fa;
+            padding: 20px 25px;
+            border-bottom: 1px solid #e1e5e9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tickets-count {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .refresh-btn {
+            background: #0052cc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .refresh-btn:hover {
+            background: #003d99;
+        }
+
+        .refresh-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .tickets-list {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .ticket-item {
+            padding: 20px 25px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .ticket-item:hover {
+            background: #f8f9fa;
+        }
+
+        .ticket-item.new {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .ticket-key {
+            font-weight: 700;
+            color: #0052cc;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .ticket-key:hover {
+            text-decoration: underline;
+        }
+
+        .ticket-type {
+            background: #f0f0f0;
+            color: #666;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .ticket-type.bug {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .ticket-type.task {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .ticket-type.story {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .ticket-summary {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .ticket-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .ticket-meta {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .labels {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .label {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .priority {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .priority.highest { background: #ffcdd2; color: #c62828; }
+        .priority.high { background: #ffe0b2; color: #ef6c00; }
+        .priority.medium { background: #fff9c4; color: #f57f17; }
+        .priority.low { background: #c8e6c9; color: #388e3c; }
+        .priority.lowest { background: #e1f5fe; color: #0277bd; }
+
+        .status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status.todo { background: #f5f5f5; color: #666; }
+        .status.progress { background: #e3f2fd; color: #1976d2; }
+        .status.done { background: #c8e6c9; color: #388e3c; }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state img {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0052cc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .controls-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group input, .filter-group select {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .ticket-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .ticket-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>📬 Bandeja de Entrada JIRA</h1>
+        <div class="navbar-actions">
+            <div id="connectionStatus" class="status-indicator status-disconnected">
+                <div class="status-dot"></div>
+                <span>Desconectado</span>
+            </div>
+            <a href="/" class="btn">➕ Crear Ticket</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Controles de filtro -->
+        <div class="controls">
+            <div class="controls-row">
+                <div class="filter-group">
+                    <label for="jiraUrl">URL de JIRA</label>
+                    <input type="url" id="jiraUrl" placeholder="https://tuempresa.atlassian.net">
+                </div>
+
+                <div class="filter-group">
+                    <label for="userEmail">Email</label>
+                    <input type="email" id="userEmail" placeholder="tu@email.com">
+                </div>
+
+                <div class="filter-group">
+                    <label for="apiToken">API Token</label>
+                    <input type="password" id="apiToken" placeholder="Tu API Token">
+                </div>
+
+                <div class="filter-group">
+                    <label for="projectKey">Proyecto</label>
+                    <input type="text" id="projectKey" placeholder="PROJ" style="text-transform: uppercase;">
+                </div>
+            </div>
+
+            <div class="controls-row" style="margin-top: 20px;">
+                <div class="filter-group">
+                    <label for="labelFilter">Filtrar por Label</label>
+                    <input type="text" id="labelFilter" placeholder="frontend, urgente, bug...">
+                </div>
+
+                <div class="filter-group">
+                    <label for="statusFilter">Estado</label>
+                    <select id="statusFilter">
+                        <option value="">Todos los estados</option>
+                        <option value="To Do">To Do</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Done">Done</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="priorityFilter">Prioridad</label>
+                    <select id="priorityFilter">
+                        <option value="">Todas las prioridades</option>
+                        <option value="Highest">Highest</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                        <option value="Lowest">Lowest</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <button onclick="connectAndLoad()" class="btn" style="background: #0052cc; color: white;">
+                        🔍 Conectar y Cargar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de tickets -->
+        <div class="tickets-container">
+            <div class="tickets-header">
+                <div class="tickets-count" id="ticketsCount">
+                    0 tickets encontrados
+                </div>
+                <button onclick="refreshTickets()" class="refresh-btn" id="refreshBtn">
+                    <span>🔄</span>
+                    <span>Actualizar</span>
+                </button>
+            </div>
+
+            <div class="tickets-list" id="ticketsList">
+                <div class="empty-state">
+                    <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
+                    <h3>No hay tickets cargados</h3>
+                    <p>Configura tu conexión a JIRA y haz clic en "Conectar y Cargar" para ver los tickets</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificación toast -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Variables globales
+        let jiraConfig = {};
+        let allTickets = [];
+        let eventSource = null;
+        let lastTicketCount = 0;
+
+        // Función para mostrar notificaciones toast
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // Función para actualizar el estado de conexión
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            if (connected) {
+                statusEl.className = 'status-indicator status-connected';
+                statusEl.innerHTML = '<div class="status-dot"></div><span>Conectado</span>';
+            } else {
+                statusEl.className = 'status-indicator status-disconnected';
+                statusEl.innerHTML = '<div class="status-dot"></div><span>Desconectado</span>';
+            }
+        }
+
+        // Función para conectar y cargar tickets
+        async function connectAndLoad() {
+            const url = document.getElementById('jiraUrl').value.trim();
+            const email = document.getElementById('userEmail').value.trim();
+            const token = document.getElementById('apiToken').value.trim();
+            const projectKey = document.getElementById('projectKey').value.trim().toUpperCase();
+
+            if (!url || !email || !token || !projectKey) {
+                showNotification('Por favor, completa todos los campos de configuración', 'error');
+                return;
+            }
+
+            jiraConfig = { url, email, token, projectKey };
+
+            // Mostrar loading
+            const ticketsList = document.getElementById('ticketsList');
+            ticketsList.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+            try {
+                // Probar conexión
+                const testResult = await apiRequest('test-connection', jiraConfig);
+                if (!testResult.success) {
+                    throw new Error(testResult.message);
+                }
+
+                updateConnectionStatus(true);
+                await loadTickets();
+                startRealTimeUpdates();
+
+                showNotification('Conectado exitosamente a JIRA');
+
+            } catch (error) {
+                console.error('Error connecting:', error);
+                showNotification(`Error de conexión: ${error.message}`, 'error');
+                updateConnectionStatus(false);
+
+                ticketsList.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
+                        <h3>Error de Conexión</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Función para cargar tickets
+        async function loadTickets() {
+            try {
+                const result = await apiRequest('get-tickets', {
+                    ...jiraConfig,
+                    labelFilter: document.getElementById('labelFilter').value.trim(),
+                    statusFilter: document.getElementById('statusFilter').value,
+                    priorityFilter: document.getElementById('priorityFilter').value
+                });
+
+                if (result.success) {
+                    allTickets = result.tickets || [];
+                    renderTickets();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error loading tickets:', error);
+                showNotification(`Error cargando tickets: ${error.message}`, 'error');
+            }
+        }
+
+        // Función para renderizar tickets
+        function renderTickets() {
+            const ticketsList = document.getElementById('ticketsList');
+            const ticketsCount = document.getElementById('ticketsCount');
+
+            if (allTickets.length === 0) {
+                ticketsList.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
+                        <h3>No se encontraron tickets</h3>
+                        <p>No hay tickets que coincidan con los filtros actuales</p>
+                    </div>
+                `;
+                ticketsCount.textContent = '0 tickets encontrados';
+                return;
+            }
+
+            // Detectar nuevos tickets
+            const newTicketsCount = allTickets.length - lastTicketCount;
+            if (newTicketsCount > 0 && lastTicketCount > 0) {
+                showNotification(`${newTicketsCount} nuevo${newTicketsCount > 1 ? 's' : ''} ticket${newTicketsCount > 1 ? 's' : ''} encontrado${newTicketsCount > 1 ? 's' : ''}`);
+            }
+            lastTicketCount = allTickets.length;
+
+            const ticketsHtml = allTickets.map((ticket, index) => {
+                const isNew = index < newTicketsCount;
+                const labels = ticket.labels || [];
+                const priority = ticket.priority ? ticket.priority.name.toLowerCase() : 'medium';
+                const status = ticket.status ? ticket.status.name.toLowerCase().replace(' ', '') : 'todo';
+                const issueType = ticket.issueType ? ticket.issueType.name.toLowerCase() : 'task';
+
+                return `
+                    <div class="ticket-item ${isNew ? 'new' : ''}" data-key="${ticket.key}">
+                        <div class="ticket-header">
+                            <a href="${ticket.url}" target="_blank" class="ticket-key">${ticket.key}</a>
+                            <div class="ticket-type ${issueType}">${ticket.issueType?.name || 'Task'}</div>
+                        </div>
+
+                        <div class="ticket-summary">${ticket.summary}</div>
+
+                        ${ticket.description ? `<div class="ticket-description">${ticket.description.substring(0, 200)}${ticket.description.length > 200 ? '...' : ''}</div>` : ''}
+
+                        <div class="ticket-meta">
+                            <div class="meta-item">
+                                <span>🏷️</span>
+                                <div class="labels">
+                                    ${labels.length > 0 ? labels.map(label => `<span class="label">${label}</span>`).join('') : '<span style="color: #999;">Sin labels</span>'}
+                                </div>
+                            </div>
+
+                            <div class="meta-item">
+                                <span>⚡</span>
+                                <span class="priority ${priority}">${ticket.priority?.name || 'Medium'}</span>
+                            </div>
+
+                            <div class="meta-item">
+                                <span>📊</span>
+                                <span class="status ${status}">${ticket.status?.name || 'To Do'}</span>
+                            </div>
+
+                            <div class="meta-item">
+                                <span>👤</span>
+                                <span>${ticket.assignee?.displayName || 'Sin asignar'}</span>
+                            </div>
+
+                            <div class="meta-item">
+                                <span>📅</span>
+                                <span>${new Date(ticket.created).toLocaleDateString('es-ES')}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            ticketsList.innerHTML = ticketsHtml;
+            ticketsCount.textContent = `${allTickets.length} ticket${allTickets.length !== 1 ? 's' : ''} encontrado${allTickets.length !== 1 ? 's' : ''}`;
+        }
+
+        // Función para refrescar tickets manualmente
+        async function refreshTickets() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            const originalText = refreshBtn.innerHTML;
+
+            refreshBtn.innerHTML = '<div style="width:16px;height:16px;border:2px solid #fff;border-top:2px solid transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>';
+            refreshBtn.disabled = true;
+
+            await loadTickets();
+
+            refreshBtn.innerHTML = originalText;
+            refreshBtn.disabled = false;
+        }
+
+        // Función para iniciar actualizaciones en tiempo real
+        function startRealTimeUpdates() {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            const params = new URLSearchParams({
+                url: jiraConfig.url,
+                email: jiraConfig.email,
+                token: jiraConfig.token,
+                projectKey: jiraConfig.projectKey,
+                labelFilter: document.getElementById('labelFilter').value.trim(),
+                statusFilter: document.getElementById('statusFilter').value,
+                priorityFilter: document.getElementById('priorityFilter').value
+            });
+
+            eventSource = new EventSource(`/api/tickets-stream?${params}`);
+
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'tickets-update') {
+                    allTickets = data.tickets || [];
+                    renderTickets();
+                }
+            };
+
+            eventSource.onerror = function(error) {
+                console.error('EventSource error:', error);
+                updateConnectionStatus(false);
+
+                // Intentar reconectar después de 5 segundos
+                setTimeout(() => {
+                    if (jiraConfig.url) {
+                        startRealTimeUpdates();
+                    }
+                }, 5000);
+            };
+        }
+
+        // Función para hacer peticiones al backend
+        async function apiRequest(endpoint, data) {
+            const response = await fetch(`/api/${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            return await response.json();
+        }
+
+        // Event listeners para filtros
+        document.getElementById('labelFilter').addEventListener('input', debounce(() => {
+            if (jiraConfig.url) {
+                loadTickets();
+            }
+        }, 500));
+
+        document.getElementById('statusFilter').addEventListener('change', () => {
+            if (jiraConfig.url) {
+                loadTickets();
+            }
+        });
+
+        document.getElementById('priorityFilter').addEventListener('change', () => {
+            if (jiraConfig.url) {
+                loadTickets();
+            }
+        });
+
+        // Función debounce para evitar demasiadas peticiones
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Limpiar EventSource al cerrar la página
+        window.addEventListener('beforeunload', () => {
+            if (eventSource) {
+                eventSource.close();
+            }
+        });
+    </script>
+</body>
+</html>
